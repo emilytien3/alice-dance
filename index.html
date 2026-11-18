@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>亮亮的舞台光影｜2023–2026 舞蹈比賽成長典藏</title>
+  <!-- 引入 Google Fonts：思源宋體 (襯線標題) & 思源黑體 (內文) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;700&display=swap" rel="stylesheet">
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            stage: {
+              bg: '#0C0C10',
+              card: '#16161D',
+              border: '#2A2A36',
+              gold: '#D4AF37',
+              goldLight: '#F3E5AB',
+              muted: '#9CA3AF',
+              text: '#F3F4F6'
+            }
+          },
+          fontFamily: {
+            serif: ['"Noto Serif TC"', '"Cormorant Garamond"', 'serif'],
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0C0C10;
+      color: #F3F4F6;
+      font-family: 'Noto Sans TC', sans-serif;
+      overflow-x: hidden;
+    }
+    .spotlight-bg {
+      background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.18) 0%, rgba(12, 12, 16, 0) 65%);
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA8220 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .timeline-line {
+      background: linear-gradient(to bottom, transparent, #D4AF37 10%, #D4AF37 90%, transparent);
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-stage-gold selection:text-stage-bg">
+
+  <!-- ========================================== -->
+  <!-- 🔧 【媽咪設定區】可以在這裡修改密碼 -->
+  <!-- ========================================== -->
+  <script>
+    // ★ 請在這裡設定 4 位數密碼（例如亮亮的生日）
+    const ACCESS_PASSCODE = "0111"; // 亮亮的生日：1月11日
+  </script>
+
+  <!-- ========================================== -->
+  <!-- 🔒 劇場入場密碼鎖畫面 (Lock Screen)        -->
+  <!-- ========================================== -->
+  <div id="lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-stage-bg px-4 transition-opacity duration-700">
+    <div class="spotlight-bg absolute inset-0 pointer-events-none"></div>
+    <div class="relative w-full max-w-md rounded-2xl border border-stage-gold/30 bg-stage-card/90 p-8 text-center shadow-2xl backdrop-blur-md">
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-stage-gold/40 bg-stage-gold/10 text-stage-gold">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <p class="font-serif text-xs tracking-[0.25em] text-stage-gold uppercase mb-2">Private Archive</p>
+      <h2 class="font-serif text-2xl font-bold text-white mb-2">亮亮的舞台光影典藏</h2>
+      <p class="text-sm text-stage-muted mb-6">請輸入 4 位數專屬通行密碼，開啟這段成長紀錄</p>
+      
+      <div class="flex justify-center gap-3 mb-4">
+        <input type="password" id="passcode-input" maxlength="4" inputmode="numeric" placeholder="••••"
+          class="w-44 rounded-lg border border-stage-border bg-stage-bg px-4 py-3 text-center font-serif text-2xl tracking-[0.5em] text-stage-gold focus:border-stage-gold focus:outline-none"
+          onkeyup="if(event.key === 'Enter') checkPasscode()" />
+      </div>
+      <p id="error-msg" class="text-xs text-rose-400 h-4 mb-3 opacity-0 transition-opacity">密碼不正確，請再試一次</p>
+      
+      <button onclick="checkPasscode()"
+        class="w-44 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#B59226] py-2.5 text-sm font-medium text-stage-bg shadow-lg hover:brightness-110 transition cursor-pointer">
+        拉開舞台布幕
+      </button>      
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 🖼️ 全螢幕照片燈箱 (Photo Lightbox Modal)   -->
+  <!-- ========================================== -->
+  <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/95 p-4 backdrop-blur-sm" onclick="closeLightbox(event)">
+    <button onclick="closeLightbox(event, true)" class="absolute top-5 right-6 text-white/70 hover:text-stage-gold text-3xl font-light z-10 cursor-pointer" title="關閉 (ESC)">&times;</button>
+    
+    <button onclick="changePhoto(-1, event)" class="absolute left-3 sm:left-8 rounded-full border border-white/20 bg-black/50 p-3 text-white hover:border-stage-gold hover:text-stage-gold transition z-10 cursor-pointer" title="上一張">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+
+    <div class="max-w-5xl max-h-[88vh] flex flex-col items-center" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="舞台劇照放大檢視" class="max-h-[78vh] w-auto rounded-lg border border-stage-gold/30 shadow-2xl object-contain" />
+      <p id="lightbox-caption" class="mt-4 font-serif text-sm sm:text-base text-stage-goldLight tracking-wider text-center"></p>
+    </div>
+
+    <button onclick="changePhoto(1, event)" class="absolute right-3 sm:right-8 rounded-full border border-white/20 bg-black/50 p-3 text-white hover:border-stage-gold hover:text-stage-gold transition z-10 cursor-pointer" title="下一張">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 🎭 主網頁內容 (Main Content)               -->
+  <!-- ========================================== -->
+  <div id="main-content" class="hidden opacity-0 transition-opacity duration-1000">
+
+    <!-- 1. 首屏主視覺 (Hero Section) -->
+    <header class="relative min-h-[85vh] flex flex-col justify-center items-center text-center px-6 py-20 spotlight-bg border-b border-stage-border/60">
+      <div class="max-w-3xl mx-auto">
+        <div class="inline-block rounded-full border border-stage-gold/40 bg-stage-gold/10 px-4 py-1.5 text-xs tracking-[0.2em] text-stage-goldLight mb-6">
+          2023 – 2026 ・ DANCE JOURNEY ARCHIVE
+        </div>
+        <h1 class="font-serif text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-6">
+          <span class="gold-gradient-text">亮亮的舞台光影</span><br/>
+          <span class="text-2xl sm:text-3xl md:text-4xl font-normal text-white/90 mt-2 block">從初啼到從容的五次綻放</span>
+        </h1>
+        <p class="text-sm sm:text-base tracking-widest text-stage-gold/90 mb-10">
+          橫跨國小五年級至國中八年級 ・ 現代舞 × 民俗舞的追夢足跡
+        </p>
+
+        <!-- 媽媽的序言卡片 -->
+        <div class="relative rounded-2xl border border-stage-gold/25 bg-stage-card/70 p-6 sm:p-10 text-left shadow-2xl backdrop-blur-sm">
+          <span class="font-serif text-5xl text-stage-gold/30 absolute top-4 left-6">“</span>
+          <p class="relative z-10 text-sm sm:text-base leading-relaxed text-gray-300 font-light indent-8">
+            妳不是從小習舞的孩子，性格也偏安靜。但從五年級第一次站上比賽舞台、緊張到腳發抖卻依然穩穩完成的那一刻起，我們看見了妳骨子裡的堅毅。這三年多來，無論是滿腿的黑青、凌晨三點的妝髮出發，還是社區一樓深夜為妳亮起的那盞燈，每一次的汗水與眼淚，都化作了最美的養分。比賽或許告一段落，但妳熱愛舞蹈的心與直面挑戰的勇氣，將永遠在人生的舞台上發光。
+          </p>
+          <p class="mt-4 text-right font-serif text-sm text-stage-gold">— 永遠為妳喝采的媽咪</p>
+        </div>
+
+        <a href="#milestones" class="mt-12 inline-flex flex-col items-center text-xs text-stage-muted hover:text-stage-gold transition">
+          <span class="tracking-widest mb-2">探索五場舞台記憶</span>
+          <svg class="w-5 h-5 animate-bounce text-stage-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- 2. 成長里程碑數據列 (Milestones Bar) -->
+    <section id="milestones" class="py-14 px-6 bg-stage-card/40 border-b border-stage-border/60">
+      <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div class="p-4 rounded-xl border border-stage-border bg-stage-bg/60">
+          <div class="font-serif text-3xl sm:text-4xl font-bold text-stage-gold mb-1">5 <span class="text-base font-normal">場</span></div>
+          <div class="text-xs sm:text-sm text-stage-muted">正式個人舞蹈賽事</div>
+        </div>
+        <div class="p-4 rounded-xl border border-stage-border bg-stage-bg/60">
+          <div class="font-serif text-3xl sm:text-4xl font-bold text-stage-gold mb-1">3 <span class="text-base font-normal">支</span></div>
+          <div class="text-xs sm:text-sm text-stage-muted">量身打造專屬舞碼</div>
+        </div>
+        <div class="p-4 rounded-xl border border-stage-border bg-stage-bg/60">
+          <div class="font-serif text-3xl sm:text-4xl font-bold text-stage-gold mb-1">1,040+ <span class="text-base font-normal">天</span></div>
+          <div class="text-xs sm:text-sm text-stage-muted">跨越學業與練舞的堅持</div>
+        </div>
+        <div class="p-4 rounded-xl border border-stage-border bg-stage-bg/60">
+          <div class="font-serif text-3xl sm:text-4xl font-bold text-stage-gold mb-1">∞</div>
+          <div class="text-xs sm:text-sm text-stage-muted">從發抖到從容的內心力量</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 五場賽事時間軸 (The 5 Chapters) -->
+    <main class="max-w-5xl mx-auto px-6 py-20 relative">
+      <div class="text-center mb-16">
+        <p class="font-serif text-xs tracking-[0.25em] text-stage-gold uppercase mb-2">The 5 Chapters</p>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white">五次舞台上的光影足跡</h2>
+        <p class="text-xs text-stage-muted mt-3">點擊劇照可全螢幕放大欣賞細節</p>
+      </div>
+
+      <div class="relative space-y-20">
+        <div class="hidden md:block absolute left-8 top-4 bottom-4 w-[1px] timeline-line"></div>
+
+        <!-- ================= CHAPTER 01 ================= -->
+        <article class="relative md:pl-24">
+          <div class="hidden md:flex absolute left-4 top-2 h-8 w-8 items-center justify-center rounded-full border border-stage-gold bg-stage-bg text-xs font-bold text-stage-gold shadow-[0_0_15px_rgba(212,175,55,0.4)]">01</div>
+          
+          <div class="rounded-2xl border border-stage-border bg-stage-card p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stage-border pb-4 mb-6">
+              <div>
+                <span class="text-xs font-medium tracking-wider text-stage-gold">2023.11.15 ・ 國小五年級</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">初生之犢的勇氣：《玩美視界》</h3>
+                <p class="text-sm text-stage-muted mt-1">112學年度基隆市學生舞蹈比賽 國小個人組現代舞</p>
+              </div>
+              <span class="rounded-full border border-stage-gold/50 bg-stage-gold/15 px-4 py-1.5 text-sm font-medium text-stage-goldLight">
+                🏆 榮獲 優等
+              </span>
+            </div>
+
+            <p class="text-gray-300 leading-relaxed mb-6">
+              這是亮亮人生第一場正式舞蹈比賽。在「星時代舞蹈學苑」寧寧老師的耐心帶領下，從零開始打磨柔軟度與肌耐力。賽前衝刺期雙腿蒐集了滿滿的黑青，卻從不喊累、不喊痛。比賽當天雖然緊張了一百倍、連老師都看出腳在發抖，但該站穩的每一步都穩穩守住了——那份初登場的堅毅，早已是全家人心中的第一名。
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#星時代舞蹈學苑</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#寧寧老師手作道具</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#滿滿的黑青</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#腳在發抖也要站穩</span>
+            </div>
+
+            <!-- 影音與照片展示區 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-center">
+              <!-- YouTube 影片 (佔 7 欄) -->
+              <div class="lg:col-span-7 rounded-xl overflow-hidden border border-stage-border bg-black aspect-video shadow-lg">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/iI8vS0mJPQs" title="第1場：玩美視界" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <!-- 精選劇照區 (佔 5 欄) -->
+              <div class="lg:col-span-5 grid grid-cols-3 gap-2.5">
+                <button onclick="openLightbox(0)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/01-1.jpg" alt="玩美視界 劇照1" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(1)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/01-2.jpg" alt="玩美視界 劇照2" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(2)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/01-3.jpg" alt="玩美視界 劇照3" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <details class="group rounded-xl border border-stage-border/80 bg-stage-bg/50 px-4 py-3">
+              <summary class="flex cursor-pointer items-center justify-between text-xs font-medium text-stage-gold hover:text-stage-goldLight">
+                <span>📖 展開閱讀：媽咪當時的臉書完整紀錄</span>
+                <span class="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 border-t border-stage-border/60 pt-4 text-xs sm:text-sm leading-relaxed text-gray-400 whitespace-pre-line">
+2023/11/15是112學年度全國學生舞蹈比賽的基隆市初賽，也是亮亮第一次參加正式的舞蹈比賽。亮亮不是從小習舞的孩子，個性也比較靜，當初她說想要參賽時，媽咪抱持著可以讓她嘗試看看練練膽的心態，一路陪著她練習。
+很感謝學校老師當初介紹我們到 #星時代舞蹈學苑，遇到超級認真的寧寧老師❤ 老師們非常有耐心地帶著亮亮一步一腳印，從原本沒有那麼好的柔軟度及肌耐力，一步步地帶著她提升提升再提升，也非常非常用心地為亮亮量身打造她喜歡的舞蹈風格！這些道具都是老師們親手設計製作完成的！並且絞盡腦汁想出能為這支舞加分的服裝和妝髮。
+亮亮寶貝也非常努力與爭氣，持續不間斷地努力練習，尤其是比賽前夕衝刺的階段，更是蒐集了滿滿的黑青🫣 爸爸媽媽雖然超級捨不得，但看到亮亮那麼努力不喊累不喊痛，一定要全心全力支持她的呀!!!
+比賽當天，亮亮表示她比平常緊張了一百倍，媽咪自己到了比賽現場也超級緊張的😱 但亮亮卻可以如此堅毅穩定地完成比賽，媽咪發自內心地佩服!!! 老師表示：雖然老師有發現她腳在發抖，但還好該站穩的都有站穩，下次會更好的！💪
+第一次參加大型比賽，雖然沒有拿到第一名，但亮亮已是我們所有人心目中的第一名了!!! 亮亮突破了自己，展現了她的堅毅與穩定！這真的是一個非常非常美好的過程！再多的辛苦也值得了❤
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <!-- ================= CHAPTER 02 ================= -->
+        <article class="relative md:pl-24">
+          <div class="hidden md:flex absolute left-4 top-2 h-8 w-8 items-center justify-center rounded-full border border-stage-gold bg-stage-bg text-xs font-bold text-stage-gold shadow-[0_0_15px_rgba(212,175,55,0.4)]">02</div>
+          
+          <div class="rounded-2xl border border-stage-border bg-stage-card p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stage-border pb-4 mb-6">
+              <div>
+                <span class="text-xs font-medium tracking-wider text-stage-gold">2024.11.13 ・ 國小六年級</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">蛻變與綻放的花仙子：《花開花落終有時》</h3>
+                <p class="text-sm text-stage-muted mt-1">113學年度基隆市學生舞蹈比賽 國小個人組現代舞</p>
+              </div>
+              <span class="rounded-full border border-stage-gold/50 bg-stage-gold/15 px-4 py-1.5 text-sm font-medium text-stage-goldLight">
+                🏆 榮獲 優等
+              </span>
+            </div>
+
+            <p class="text-gray-300 leading-relaxed mb-6">
+              相隔一年的淬鍊，亮亮解鎖了各式翻滾技巧，也真正舞出了現代舞的靈魂。賽前一晚的最後衝刺，連老師都忍不住脫口說出：「有被感動到！」比賽當天即使遇到非預期的突發狀況，她依然保持甜美微笑、用力延展每一個指尖與腳背。賽後雖然難掩失落，但她強大的情緒消化力甚至反過來安慰好朋友，展現出遠超年齡的成熟與勇敢。
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#最美花仙子</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#解鎖翻滾功</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#老師說被感動到</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#強大的內心消化力</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-center">
+              <div class="lg:col-span-7 rounded-xl overflow-hidden border border-stage-border bg-black aspect-video shadow-lg">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/GKY9ZdRh4kU" title="第2場：花開花落終有時" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="lg:col-span-5 grid grid-cols-3 gap-2.5">
+                <button onclick="openLightbox(3)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/02-1.jpg" alt="花開花落終有時 劇照1" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(4)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/02-2.jpg" alt="花開花落終有時 劇照2" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(5)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/02-3.jpg" alt="花開花落終有時 劇照3" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <details class="group rounded-xl border border-stage-border/80 bg-stage-bg/50 px-4 py-3">
+              <summary class="flex cursor-pointer items-center justify-between text-xs font-medium text-stage-gold hover:text-stage-goldLight">
+                <span>📖 展開閱讀：媽咪當時的臉書完整紀錄（兩篇合輯）</span>
+                <span class="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 border-t border-stage-border/60 pt-4 text-xs sm:text-sm leading-relaxed text-gray-400 whitespace-pre-line">
+【賽後第一篇】
+我的🌹花仙子，真的真的好美😍 賽前一晚努力最後衝刺，比賽當天真的是全場最美，過去教過她的老師看到她也直誇她超美的❤️ 今年的成績有維持住，也是她持續不斷努力的成果💪 感謝老師們這麼用心編出這麼完整的舞作👍 感謝老師辛苦處理這麼美麗的道具，每次陪著她排練這麼重的道具搬來搬去的真的很辛苦！也感謝一直以來這麼支持亮亮的家人朋友們❤️ ⭐每一次的努力都是讓自己未來開花結果的養份💪
+
+【精選照片感言】
+兩百多張照片要精選照片出來，好像在挑婚紗照一樣😂 如夢似的今年的比賽又過去好幾天了！相隔一年的準備就展現在這時，看到當天的照片仍是滿滿的感動！看見你用盡全力的每一個細節，即使非預期的情況造成你內心的慌亂，但甜美的笑容依舊不減！用力地展現你美麗的身軀，注意自己的手、注意自己的腳尖、注意自己的腳背，每張照片都能看見你用盡全力想要表現好自己！
+今年的你真的進步好多好多：✨解鎖了各式翻滾功 ✨解鎖了展現現代舞的感覺 ✨解鎖了老師的感動——賽前一晚的排練，老師脫口說出「有被感動到！」真的是這一年來最大的成就!!! 即使賽後成績不如你的預期，即使賽後頒獎難掩你的失落，但你強大的消化能力也讓媽咪著實佩服！還能自己消化完成後安慰好朋友的心靈❤ 你的勇敢真的遠遠超乎媽咪的想像！
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <!-- ================= CHAPTER 03 ================= -->
+        <article class="relative md:pl-24">
+          <div class="hidden md:flex absolute left-4 top-2 h-8 w-8 items-center justify-center rounded-full border border-stage-gold bg-stage-bg text-xs font-bold text-stage-gold shadow-[0_0_15px_rgba(212,175,55,0.4)]">03</div>
+          
+          <div class="rounded-2xl border border-stage-border bg-stage-card p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stage-border pb-4 mb-6">
+              <div>
+                <span class="text-xs font-medium tracking-wider text-stage-gold">2025.11.13 ・ 國中七年級</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">跨越科班的民俗舞挑戰：《荷畔錦鯉戲金珠》</h3>
+                <p class="text-sm text-stage-muted mt-1">114學年度基隆市學生舞蹈比賽 國中個人組民俗舞</p>
+              </div>
+              <span class="rounded-full border border-stage-gold/50 bg-stage-gold/15 px-4 py-1.5 text-sm font-medium text-stage-goldLight">
+                🏆 榮獲 優等
+              </span>
+            </div>
+
+            <p class="text-gray-300 leading-relaxed mb-6">
+              升上國中普通班後，時間像擠到見底的牙膏一樣珍貴。這一年亮亮主動挑戰全新領域「民俗舞」，在寧寧老師、慈慈老師與毯子功老師的協助下，將扯鈴融入舞作，更在極短時間內練成了側空翻！雖然場上因為扯鈴失誤與預期成績擦肩而過，但這是三年來跳得最精彩的一次。賽後擦乾眼淚、回家繼續熬夜準備隔天小考的背影，讓人心疼更讓人佩服。
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#首度挑戰民俗舞</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#扯鈴與側空翻</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#擠牙膏般的練舞時間</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#跳得最好的一年</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-center">
+              <div class="lg:col-span-7 rounded-xl overflow-hidden border border-stage-border bg-black aspect-video shadow-lg">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/jLMUcT1ylj8" title="第3場：荷畔錦鯉戲金珠（市賽）" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="lg:col-span-5 grid grid-cols-3 gap-2.5">
+                <!-- 注意：第3場檔名副檔名為大寫 .JPG，已精準對應 -->
+                <button onclick="openLightbox(6)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/03-1.jpg" alt="荷畔錦鯉戲金珠 市賽劇照1" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(7)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/03-2.jpg" alt="荷畔錦鯉戲金珠 市賽劇照2" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(8)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/03-3.jpg" alt="荷畔錦鯉戲金珠 市賽劇照3" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <details class="group rounded-xl border border-stage-border/80 bg-stage-bg/50 px-4 py-3">
+              <summary class="flex cursor-pointer items-center justify-between text-xs font-medium text-stage-gold hover:text-stage-goldLight">
+                <span>📖 展開閱讀：媽咪當時的臉書完整紀錄</span>
+                <span class="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 border-t border-stage-border/60 pt-4 text-xs sm:text-sm leading-relaxed text-gray-400 whitespace-pre-line">
+我漂亮的小寶貝，恭喜妳昨天又完成這一年的驗收，獲得國中組民俗舞優等的成績❤️ 雖然這一年努力下來的結果不如我們預期，但媽咪真的覺得妳超級棒！昨天的表現是連續三年比賽下來最好的👍
+第一年雖然初生之犢不畏虎，但當時的妳側翻翻不正腿伸不直涮腰下不去；第二年因為小失誤妳亂了陣腳，但也讓我們學習到寶貴的經驗，就算失誤也要從從容容完成比賽；第三年也就是今年，妳向老師提出要挑戰民俗舞，老師將妳曾經接觸過的扯鈴安排進來，也在這一年有了毯子功老師的協助，在很短的時間練成側空翻，許多基本功也在不斷精雕細琢下有了明顯可見的進步❤️
+但這一年對妳也真的是很大的挑戰，從國小舞蹈班畢業變成普通班的國中生，要兼顧學業與舞蹈，常常要像擠快用完的牙膏一樣硬擠出時間，但是在這樣艱難的狀態下，妳依然表現得更好更優秀了！看到即使難過的妳回家後還是努力準備著隔天的小考到好晚才睡覺，真的很心疼！我的寶貝真的很強大💪 感謝一路陪伴亮亮成長的寧寧老師、慈慈老師，感謝您們總是那麼認真燒腦地為亮亮量身打造專屬於她的舞作。
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <!-- ================= CHAPTER 04 ================= -->
+        <article class="relative md:pl-24">
+          <div class="hidden md:flex absolute left-4 top-2 h-8 w-8 items-center justify-center rounded-full border border-stage-gold bg-stage-bg text-xs font-bold text-stage-gold shadow-[0_0_15px_rgba(212,175,55,0.4)]">04</div>
+          
+          <div class="rounded-2xl border border-stage-border bg-stage-card p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stage-border pb-4 mb-6">
+              <div>
+                <span class="text-xs font-medium tracking-wider text-stage-gold">2026.02.08 ・ 國中七年級</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">直面不足的破曉出征：《荷畔錦鯉戲金珠》</h3>
+                <p class="text-sm text-stage-muted mt-1">2026 亞太盃春季國際音樂舞蹈大賽 民俗舞個人國中組</p>
+              </div>
+              <span class="rounded-full border border-stage-gold/50 bg-stage-gold/15 px-4 py-1.5 text-sm font-medium text-stage-goldLight">
+                🏆 榮獲 優勝
+              </span>
+            </div>
+
+            <p class="text-gray-300 leading-relaxed mb-6">
+              為了彌補市賽扯鈴失誤的遺憾，一家人在寒流中凌晨三點半出發妝髮、七點前抵達板橋賽場。雖然臨場失誤比預期還多，也讓全家人真實面對升上國中後練舞時間被壓縮的現實，但走出基隆看見公開透明的評審視野，並勇敢站上舞台直面自己的不足，本身就是一場珍貴的成長課。
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#凌晨三點半出發</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#走出基隆看世界</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#直面自己的不足</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#再給自己一次機會</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-center">
+              <div class="lg:col-span-7 rounded-xl overflow-hidden border border-stage-border bg-black aspect-video shadow-lg">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/Prgu69OUqT4" title="第4場：2026 亞太盃" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="lg:col-span-5 grid grid-cols-3 gap-2.5">
+                <button onclick="openLightbox(9)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/04-1.jpg" alt="亞太盃 劇照1" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(10)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/04-2.jpg" alt="亞太盃 劇照2" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(11)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/04-3.jpg" alt="亞太盃 劇照3" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <details class="group rounded-xl border border-stage-border/80 bg-stage-bg/50 px-4 py-3">
+              <summary class="flex cursor-pointer items-center justify-between text-xs font-medium text-stage-gold hover:text-stage-goldLight">
+                <span>📖 展開閱讀：媽咪當時的臉書完整紀錄</span>
+                <span class="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 border-t border-stage-border/60 pt-4 text-xs sm:text-sm leading-relaxed text-gray-400 whitespace-pre-line">
+亮亮亞太盃個人舞比賽初體驗❤️ 今天真的超級冷，冷到我們都快凍僵🥶 結果我們透早三點半就出門到舞室妝髮，不到七點就到板橋比賽場地。其實這次決定參賽是非常臨時的決定，去年11月市賽因為扯鈴有失誤，我們大家都希望能再挑戰一次，再給自己一次讓舞作更完整的機會。
+殊不知今天失誤更多😂 但這次不是扯鈴的失誤😅 是真的得讓我們一家直面亮亮現在的處境——上了國中之後，為了維持學業匆匆忙忙，即使真的很喜歡跳舞，但還是抽不出時間兼顧。不過無論是亮亮或是我們今天都很開心，我們有走出基隆見見外面的世界，可以清楚看到每一位評審打的分數，感受到公開透明，不同評審有不同的觀點。雖然今天的狀態不如去年11月的狀態，但亮亮小妞願意並勇敢地再次站上舞台，我們與老師們都感到欣慰❤️ 直面自己的不足，是真正的勇氣💪
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <!-- ================= CHAPTER 05 ================= -->
+        <article class="relative md:pl-24">
+          <div class="hidden md:flex absolute left-4 top-2 h-8 w-8 items-center justify-center rounded-full border border-stage-gold bg-stage-gold text-xs font-bold text-stage-bg shadow-[0_0_20px_rgba(212,175,55,0.6)]">05</div>
+          
+          <div class="rounded-2xl border border-stage-gold/40 bg-stage-card p-6 sm:p-8 shadow-2xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stage-border pb-4 mb-6">
+              <div>
+                <span class="text-xs font-medium tracking-wider text-stage-gold">2026.09.19 ・ 國中八年級</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">高壓舞台上的從容謝幕：《荷畔錦鯉戲金珠》</h3>
+                <p class="text-sm text-stage-muted mt-1">ASIAN STAR GRAND PRIX 2026 亞洲之星國際舞蹈大賽 民俗舞個人少年組Ⅰ</p>
+              </div>
+              <span class="rounded-full border border-stage-gold bg-stage-gold/20 px-4 py-1.5 text-sm font-bold text-stage-goldLight">
+                🏆 榮獲 優異獎
+              </span>
+            </div>
+
+            <p class="text-gray-300 leading-relaxed mb-6">
+              備賽期間，非科班生的亮亮每天晚上在社區一樓的小空間反覆打磨動作，特別感謝社區警衛大哥每晚留燈到十一點、還貼心開冷氣的溫暖守護。比賽當天凌晨 2:45 起床，面對來自各地、氣勢驚人的專業選手，亮亮在緊湊的大師課與換裝後迅速進入狀態，在觀眾席屏息的注視下，完整、穩定、從容地跳出了這支舞最動人的模樣——這張成績單，無愧於心。
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#凌晨兩點四十五分</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#社區警衛大哥的溫暖留燈</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#誤入叢林的小白兔</span>
+              <span class="rounded-md bg-stage-bg px-3 py-1 text-xs text-stage-gold/90 border border-stage-border">#最從容穩定的一舞</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-center">
+              <div class="lg:col-span-7 rounded-xl overflow-hidden border border-stage-border bg-black aspect-video shadow-lg">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/RtZtw5nZ7Fo" title="第5場：2026 亞洲之星國際舞蹈大賽" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="lg:col-span-5 grid grid-cols-3 gap-2.5">
+                <button onclick="openLightbox(12)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/05-1.jpg" alt="亞洲之星 劇照1" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(13)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/05-2.jpg" alt="亞洲之星 劇照2" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+                <button onclick="openLightbox(14)" class="group relative overflow-hidden rounded-lg border border-stage-border aspect-[3/4] bg-stage-bg cursor-pointer">
+                  <img src="images/05-3.jpg" alt="亞洲之星 劇照3" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100">
+                    <span class="text-[10px] bg-black/70 text-stage-goldLight px-2 py-0.5 rounded">放大</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <details class="group rounded-xl border border-stage-border/80 bg-stage-bg/50 px-4 py-3">
+              <summary class="flex cursor-pointer items-center justify-between text-xs font-medium text-stage-gold hover:text-stage-goldLight">
+                <span>📖 展開閱讀：媽咪當時的臉書完整紀錄</span>
+                <span class="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div class="mt-4 border-t border-stage-border/60 pt-4 text-xs sm:text-sm leading-relaxed text-gray-400 whitespace-pre-line">
+又是一個凌晨開始備賽的一天，媽咪約莫晚上十點多躺在床上，然後凌晨兩點四十五分起床。姐姐這次來到亞洲之星💫國際舞蹈大賽，雖然已經不是科班生的我們，還是拼勁全力準備比賽，每天擠出鍛鍊、熟練舞碼的時間，在社區一樓的小小空間練習。這裡也要特別感謝我們社區的警衛大哥，每天都晚上十點甚至十一點要幫我們留燈，還很貼心幫我們開冷氣，真心感謝日常這些微小的善意❤️
+昨天到達比賽現場，很多是中南部縣市整團帶出來，氣勢都相當驚人！我們好像誤入叢林的小白兔😅 比賽的流程非常趕，亮亮需要先上一小時的大師課，緊接著換表演服補妝髮，然後直接衝去檢錄區候賽。但還好這陣子的訓練有成效，她很快能暖好身體進入狀態。
+亮亮比賽時，媽咪的小心臟真的都要蹦出來了！看到亮亮穩定地完成舞作，真的很欣慰，跟自己過去的狀態比較，這次跳得比去年穩定又從容許多，媽咪覺得很感動🥹 也算是為自己交了一張不錯的成績單！寶貝！妳真的很棒！能完整地從容地穩定地在這高壓的環境下完成比賽，媽咪太佩服了！
+              </div>
+            </details>
+          </div>
+        </article>
+
+      </div>
+    </main>
+
+    <!-- 4. 結語與彩蛋區 (The Next Chapter) -->
+    <footer class="border-t border-stage-border/60 bg-stage-card/50 py-20 px-6">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="font-serif text-xs tracking-[0.25em] text-stage-gold uppercase mb-2">The Next Chapter</p>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white mb-6">舞台謝幕，熱愛不滅</h2>
+        <p class="text-sm sm:text-base leading-relaxed text-gray-300 font-light mb-10">
+          五場比賽，三支舞碼，從 11 歲到 13 歲。現在的妳即將把重心放回課業與下一段人生旅程，或許暫時不再參加比賽，但這幾年練就的自律、抗壓與對美的執著，已經深深種在妳的身體裡。<br/>
+          特別感謝「星時代舞蹈學苑」寧寧老師、慈慈老師與毯子功老師的悉心指導與傾囊相授；感謝爸爸媽媽全年無休的接送與陪伴，以及阿公、阿嬤和弟弟始終如一的全力支持；也感謝一路並肩練習、在後台互相打氣、共同為夢想打拼的好朋友們——這些一起流汗與歡笑的青春回憶，是比獎盃更珍貴的禮物。最後，更要謝謝那個無論多累、從未輕言放棄的亮亮。
+        </p>
+
+        <!-- 亮亮的悄悄話彩蛋卡片 -->
+        <div class="rounded-2xl border border-dashed border-stage-gold/40 bg-stage-bg/80 p-6 sm:p-8 text-left mb-12">
+          <div class="flex items-center gap-2 text-stage-gold font-serif text-base font-bold mb-2">
+            <span>✨ 給未來的自己：亮亮的悄悄話</span>
+          </div>
+          <p class="text-xs sm:text-sm text-stage-muted italic">
+            （這裡預留給亮亮親自寫下幾句話，記錄這幾年跳舞最難忘的一刻，或對下一個人生階段的期許～）
+          </p>
+        </div>
+
+        <p class="text-xs text-stage-muted/60 tracking-widest">
+          MADE WITH LOVE BY MOM & DAD ・ 2023–2026
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ⚙️ 密碼鎖 & 燈箱互動邏輯 (JavaScript)      -->
+  <!-- ========================================== -->
+  <script>
+    // 15 張劇照清單與圖說
+    const GALLERY_PHOTOS = [
+      { src: 'images/01-1.jpg', caption: '01｜2023.11.15 基隆市賽《玩美視界》— 初登舞台的勇氣 (1/3)' },
+      { src: 'images/01-2.jpg', caption: '01｜2023.11.15 基隆市賽《玩美視界》— 彩虹絲帶與飛躍 (2/3)' },
+      { src: 'images/01-3.jpg', caption: '01｜2023.11.15 基隆市賽《玩美視界》— 老師手作底片膠捲道具 (3/3)' },
+      { src: 'images/02-1.jpg', caption: '02｜2024.11.13 基隆市賽《花開花落終有時》— 玫瑰花仙子綻放 (1/3)' },
+      { src: 'images/02-2.jpg', caption: '02｜2024.11.13 基隆市賽《花開花落終有時》— 延伸指尖與腳背 (2/3)' },
+      { src: 'images/02-3.jpg', caption: '02｜2024.11.13 基隆市賽《花開花落終有時》— 紅裙舞動瞬間 (3/3)' },
+      { src: 'images/03-1.jpg', caption: '03｜2025.11.13 基隆市賽《荷畔錦鯉戲金珠》— 荷畔躍起 (1/3)' },
+      { src: 'images/03-2.jpg', caption: '03｜2025.11.13 基隆市賽《荷畔錦鯉戲金珠》— 優雅身段 (2/3)' },
+      { src: 'images/03-3.jpg', caption: '03｜2025.11.13 基隆市賽《荷畔錦鯉戲金珠》— 側空翻突破 (3/3)' },
+      { src: 'images/04-1.jpg', caption: '04｜2026.02.08 亞太盃《荷畔錦鯉戲金珠》— 破曉出征 (1/3)' },
+      { src: 'images/04-2.jpg', caption: '04｜2026.02.08 亞太盃《荷畔錦鯉戲金珠》— 直面舞台的自信 (2/3)' },
+      { src: 'images/04-3.jpg', caption: '04｜2026.02.08 亞太盃《荷畔錦鯉戲金珠》— 扯鈴拋接定格 (3/3)' },
+      { src: 'images/05-1.jpg', caption: '05｜2026.09.19 亞洲之星《荷畔錦鯉戲金珠》— 從容與穩定 (1/3)' },
+      { src: 'images/05-2.jpg', caption: '05｜2026.09.19 亞洲之星《荷畔錦鯉戲金珠》— 柔韌與力量 (2/3)' },
+      { src: 'images/05-3.jpg', caption: '05｜2026.09.19 亞洲之星《荷畔錦鯉戲金珠》— 完美謝幕 (3/3)' }
+    ];
+
+    let currentPhotoIndex = 0;
+
+    function openLightbox(index) {
+      currentPhotoIndex = index;
+      updateLightboxView();
+      const lb = document.getElementById('lightbox');
+      lb.classList.remove('hidden');
+      lb.classList.add('flex');
+    }
+
+    function closeLightbox(event, force = false) {
+      if (force || event.target.id === 'lightbox') {
+        const lb = document.getElementById('lightbox');
+        lb.classList.add('hidden');
+        lb.classList.remove('flex');
+      }
+    }
+
+    function changePhoto(step, event) {
+      if (event) event.stopPropagation();
+      currentPhotoIndex = (currentPhotoIndex + step + GALLERY_PHOTOS.length) % GALLERY_PHOTOS.length;
+      updateLightboxView();
+    }
+
+    function updateLightboxView() {
+      const photo = GALLERY_PHOTOS[currentPhotoIndex];
+      document.getElementById('lightbox-img').src = photo.src;
+      document.getElementById('lightbox-caption').textContent = photo.caption;
+    }
+
+    // 鍵盤左右鍵切換燈箱照片 & ESC 關閉
+    document.addEventListener('keydown', (e) => {
+      const lb = document.getElementById('lightbox');
+      if (!lb.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') changePhoto(-1);
+        if (e.key === 'ArrowRight') changePhoto(1);
+        if (e.key === 'Escape') closeLightbox(null, true);
+      }
+    });
+
+    // 密碼驗證邏輯
+    window.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('liangliang_unlocked') === 'true') {
+        unlockStage(true);
+      } else {
+        document.getElementById('passcode-input').focus();
+      }
+    });
+
+    function checkPasscode() {
+      const input = document.getElementById('passcode-input').value.trim();
+      const errorMsg = document.getElementById('error-msg');
+      
+      if (input === ACCESS_PASSCODE) {
+        sessionStorage.setItem('liangliang_unlocked', 'true');
+        unlockStage(false);
+      } else {
+        errorMsg.classList.remove('opacity-0');
+        document.getElementById('passcode-input').value = '';
+        document.getElementById('passcode-input').focus();
+      }
+    }
+
+    function unlockStage(instant) {
+      const lockScreen = document.getElementById('lock-screen');
+      const mainContent = document.getElementById('main-content');
+      
+      if (instant) {
+        lockScreen.style.display = 'none';
+        mainContent.classList.remove('hidden');
+        mainContent.classList.remove('opacity-0');
+      } else {
+        lockScreen.classList.add('opacity-0');
+        setTimeout(() => {
+          lockScreen.style.display = 'none';
+          mainContent.classList.remove('hidden');
+          requestAnimationFrame(() => {
+            mainContent.classList.remove('opacity-0');
+          });
+        }, 600);
+      }
+    }
+  </script>
+</body>
+</html>
